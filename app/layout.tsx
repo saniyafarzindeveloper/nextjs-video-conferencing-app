@@ -14,7 +14,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Video Conf App",
+  title: "Meetings",
   description: "NextJS powered video conferencing app",
 };
 
