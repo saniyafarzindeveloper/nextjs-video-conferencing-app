@@ -2,10 +2,12 @@
 import { cn } from "@/lib/utils";
 import {
   CallControls,
+  CallingState,
   CallParticipantsList,
   CallStatsButton,
   PaginatedGridLayout,
   SpeakerLayout,
+  useCallStateHooks,
 } from "@stream-io/video-react-sdk";
 import { useState } from "react";
 import {
@@ -16,9 +18,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Users, LayoutList } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import EndCallButton from "./EndCallButton";
+import Loader from "./Loader";
 
 type CallLayoutType = "grid" | "speaker-left" | "speaker-right";
 export default function MeetingRoom() {
+  const searchParams = useSearchParams();
+  const {useCallCallingState} = useCallStateHooks();
+  const callingState = useCallCallingState();
+  const isPersonalRoom = !!searchParams.get('personal'); //!! is used to turn falsey values to boolean values
   const [layout, setLayout] = useState<CallLayoutType>("speaker-left");
   const [showParticipants, setShowParticipants] = useState(false);
   //function for the call's layout
@@ -33,6 +42,9 @@ export default function MeetingRoom() {
         return <SpeakerLayout participantsBarPosition="right" />;
     }
   };
+
+  //checking for calling state - joined/not joined
+  if(callingState !== CallingState.JOINED) return <Loader />
   return (
     <div className="relative h-screen w-full overflow-hidden pt-4 text-white">
       <div className="relative flex size-full items-center justify-center">
@@ -50,7 +62,7 @@ export default function MeetingRoom() {
         <CallParticipantsList onClose={() => setShowParticipants(false)} />
       </div>
 
-      <div className="fixed bottom-0 flex w-full items-center justify-center gap-5">
+      <div className="fixed bottom-0 flex w-full items-center justify-center gap-5 flex-wrap">
         <CallControls />
         <DropdownMenu>
           <div className="flex items-center">
@@ -81,6 +93,7 @@ export default function MeetingRoom() {
             <Users size={20} className="text-white" />
           </div>
         </button>
+        {!isPersonalRoom && <EndCallButton />}
       </div>
     </div>
   );
