@@ -5,9 +5,10 @@ import { useGetCalls } from "@/hooks/useGetCalls";
 import { CallRecording } from "@stream-io/node-sdk";
 import { Call } from "@stream-io/video-react-sdk";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import MeetingCard from "./MeetingCard";
 import Loader from "./Loader";
+import { useToast } from "./ui/use-toast";
 
 export default function CallList({
   type,
@@ -18,6 +19,7 @@ export default function CallList({
     useGetCalls();
   const router = useRouter();
   const [recordings, setRecording] = useState<CallRecording[]>([]);
+  const{ toast } = useToast();
 
   //call based calling
   const getCalls = () => {
@@ -48,6 +50,29 @@ export default function CallList({
     }
   };
 
+  //logic for extracting call recordings
+  useEffect(() => {
+    const fetchRecordings = async () => {
+      //for handling: too many req handling error
+      try {
+        //get access to the meeting people were in
+      const callData = await Promise.all(callRecordings.map((meeting) => meeting.queryRecordings()))
+
+      //extracting recordings
+      const recordings = callData
+      .filter(call => call.recordings.length > 0)
+      .flatMap(call => call.recordings) //if there are nested arrays it will put every array in a single array/list
+      setRecording(recordings); 
+
+      } catch (error) {
+        console.log("fetchRecordings error", error)
+        toast({title : 'Try again later'})
+      }
+      
+    }
+    if(type === 'recordings') fetchRecordings();
+  }, [type, callRecordings]);
+
   if(isLoading) return <Loader />
 
   const calls = getCalls();
@@ -67,7 +92,7 @@ export default function CallList({
             }
             title={
               (meeting as Call).state?.custom?.description ||
-              (meeting as CallRecording).filename?.substring(0, 20) ||
+              (meeting as CallRecording).filename?.substring(0, 20) || meeting.filename.substring(0,20) ||
               'No Description'
             }
             date={
