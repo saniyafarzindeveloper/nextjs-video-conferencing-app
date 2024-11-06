@@ -1,8 +1,11 @@
-'use client'
+"use client";
 
 import { Button } from "@/components/ui/button";
-import {useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/use-toast";
+import { useGetById } from "@/hooks/useGetCallById";
 import { useUser } from "@clerk/nextjs";
+import { useStreamVideoClient } from "@stream-io/video-react-sdk";
+import { useRouter } from "next/navigation";
 import React from "react";
 
 const Table = ({
@@ -25,14 +28,32 @@ const Table = ({
 };
 
 const PersonalRoom = () => {
-  const {toast} = useToast();
+  const client = useStreamVideoClient();
+  const router = useRouter();
+  const { toast } = useToast();
   const { isLoaded, user } = useUser();
   const meetingId = user?.id;
   const meetingLink = `${process.env.NEXT_PUBLIC_BASE_URL}/meeting/${meetingId}?personal=true`;
 
-  const startRoom = async () =>{
+  //getting call details to start the meeting
+  const { call } = useGetById(meetingId!);
+  //this function looks for an already existing call or creates a new call
+  const startRoom = async () => {
+    if (!client || !user) return;
 
-  }
+    //if no call already exists
+    if (!call) {
+      //create a call if user both user & client exists
+      const newCall = client.call("default", meetingId!);
+      await newCall.getOrCreate({
+        data: {
+          starts_at: new Date().toISOString(),
+          
+        },
+      });
+    }
+    router.push(`/meeting/${meetingId}?personal=true`); 
+  };
 
   if (!isLoaded || !user) {
     return <p>Loading...</p>;
@@ -42,12 +63,15 @@ const PersonalRoom = () => {
     <section className="flex size-full flex-col gap-10 text-white">
       <h1 className="text-3xl font-bold">Personal Room</h1>
       <div className="flex w-full flex-col gap-8 xl:max-w-[900px]">
-        <Table title="Topic" description={`${user.username || user.firstName}'s meeting Room`} />
+        <Table
+          title="Topic"
+          description={`${user.username || user.firstName}'s meeting Room`}
+        />
         <Table title="Meeting ID" description={meetingId!} />
         <Table title="Invite Link" description={meetingLink!} />
       </div>
 
-    {/* action buttons */}
+      {/* action buttons */}
       <div className="flex gap-5 ">
         <Button className="bg-blue-1" onClick={startRoom}>
           Start Meeting

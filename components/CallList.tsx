@@ -92,8 +92,8 @@ export default function CallList({
             }
             title={
               (meeting as Call).state?.custom?.description ||
-              (meeting as CallRecording).filename?.substring(0, 20) || meeting.filename.substring(0,20) ||
-              'No Description'
+              (meeting as CallRecording).filename?.substring(0, 20) ||
+              'Personal Meeting Room'
             }
             date={
               (meeting as Call).state?.startsAt?.toLocaleString() ||
