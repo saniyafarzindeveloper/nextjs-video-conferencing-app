@@ -9,7 +9,7 @@ import { useGetById } from "@/hooks/useGetCallById";
 import Loader from "@/components/Loader";
 
 const Meeting = ({ params: { id } }: { params: { id: string } }) => {
-  const { user, isLoaded } = useUser();
+  const {  isLoaded } = useUser();
   const [isSetupComplete, setIsSetupComplete] = useState(false);
   const { call, isCallLoading } = useGetById(id); //import custom hook
   if(!isLoaded || isCallLoading) return <Loader />
