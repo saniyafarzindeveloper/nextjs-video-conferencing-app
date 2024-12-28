@@ -1,3 +1,6 @@
+//This file is a React component implementing a context provider for integrating Stream Video SDK into a Next.js application. The provider ensures that a StreamVideoClient instance is initialized and made available to all children components, 
+//enabling video-related functionality such as calls and streams.
+
 "use client";
 import { tokenProvider } from '@/actions/stream.action';
 import Loader from '@/components/Loader';
